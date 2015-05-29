@@ -24,6 +24,17 @@ You need the following installed and available in your $PATH:
 * [Java 7](http://java.oracle.com)
 
 * [Apache maven 3.0.3 or greater](http://maven.apache.org/)
+ 
+#### OS X Users
+Don't forget to install Java 7. You probably have 1.6 or 1.8.
+
+Export JAVA_HOME in order to user proper Java version:
+```
+export JAVA_HOME=`/usr/libexec/java_home -v 1.7`
+export PATH=${JAVA_HOME}/bin:$PATH
+```
+
+#### Building
 
 After cloning the project, you can build it from source with this command:
 
@@ -265,7 +276,7 @@ Note!  The templates are included in the library generated.  If you want to modi
 License
 -------
 
-Copyright 2015 Reverb Technologies, Inc.
+Copyright 2015 SmartBear Software
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
