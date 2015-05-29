@@ -6,6 +6,16 @@
   <version>1.0.0</version>
   <name>testapp</name>
   <url>http://maven.apache.org</url>
+  <repositories>
+    <repository>
+        <id>oauthio-server-java-mvn-repo</id>
+        <url>https://raw.github.com/oauth-io/oauthio-server-java/mvn-repo/</url>
+        <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>always</updatePolicy>
+        </snapshots>
+    </repository>
+  </repositories>
 
   <dependencies>
     <dependency>
