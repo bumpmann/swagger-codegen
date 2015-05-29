@@ -1,0 +1,62 @@
+package {{package}};
+
+import {{invokerPackage}}.JsonUtil;
+
+{{#imports}}import {{import}};
+{{/imports}}
+
+import com.wordnik.swagger.annotations.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
+{{#models}}
+
+{{#model}}{{#description}}
+/**
+ * {{description}}
+ **/{{/description}}
+@ApiModel(description = "{{{description}}}")
+public class {{classname}} {{#parent}}extends {{{parent}}}{{/parent}} {
+  {{#vars}}{{#isEnum}}
+  public enum {{datatypeWithEnum}} {
+    {{#allowableValues}}{{#values}} {{.}}, {{/values}}{{/allowableValues}}
+  };
+  private {{{datatypeWithEnum}}} {{baseName}} = {{{defaultValue}}};{{/isEnum}}{{^isEnum}}
+  private {{{datatype}}} {{baseName}} = {{{defaultValue}}};{{/isEnum}}{{/vars}}
+
+  {{#vars}}
+  /**{{#description}}
+   * {{{description}}}{{/description}}{{#minimum}}
+   * minimum: {{minimum}}{{/minimum}}{{#maximum}}
+   * maximum: {{maximum}}{{/maximum}}
+   **/
+  @ApiModelProperty({{#required}}required = {{required}}, {{/required}}value = "{{{description}}}")
+  @JsonProperty("{{baseName}}")
+  public {{{datatypeWithEnum}}} {{getter}}() {
+    return {{baseName}};
+  }
+  public void {{setter}}({{{datatypeWithEnum}}} {{baseName}}) {
+    this.{{baseName}} = {{baseName}};
+  }
+
+  {{/vars}}
+
+  public String toJson() {
+    try {
+      return JsonUtil.getJsonMapper().writeValueAsString(this);
+    }
+    catch (Exception e) {
+      return null;
+    }
+  }
+
+  @Override
+  public String toString()  {
+    StringBuilder sb = new StringBuilder();
+    sb.append("class {{classname}} {\n");
+    {{#parent}}sb.append("  " + super.toString()).append("\n");{{/parent}}
+    {{#vars}}sb.append("  {{baseName}}: ").append({{baseName}}).append("\n");
+    {{/vars}}sb.append("}\n");
+    return sb.toString();
+  }
+}
+{{/model}}
+{{/models}}

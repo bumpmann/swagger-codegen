@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonGenerator.Feature;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.annotation.*;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.dataformat.yaml.snakeyaml.external.biz.base64Coder.Base64Coder;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -15,6 +16,7 @@ import com.sun.jersey.multipart.FormDataMultiPart;
 
 import javax.ws.rs.core.Response.Status.Family;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 
 import java.util.Collection;
 import java.util.Map;
@@ -116,6 +118,12 @@ public class ApiInvoker {
      defaultHeaderMap.put(key, value);
   }
 
+  public void setProviderKeys(String providerId, String providerSecret) {
+    String basicAuth = providerId + ":" + providerSecret;
+    String authorization = new String(Base64Coder.encode(basicAuth.getBytes()));
+    defaultHeaderMap.put("Authorizationp", "Basic " + authorization);
+  }
+
   public String escapeString(String str) {
     try{
       return URLEncoder.encode(str, "utf8").replaceAll("\\+", "%20");
@@ -132,6 +140,8 @@ public class ApiInvoker {
     try{
       Map<String, Object> jsonPayload = JsonUtil.getJsonMapper().readValue(json, Map.class);
       Object payloadData = jsonPayload.get("data");
+      if(payloadData == null)
+        payloadData = jsonPayload;
       if("list".equals(containerType) || "array".equals(containerType)) {
         JavaType typeInfo = JsonUtil.getJsonMapper().getTypeFactory().constructCollectionType(List.class, cls);
         List response = (List<?>) JsonUtil.getJsonMapper().convertValue(payloadData, typeInfo);
@@ -142,6 +152,19 @@ public class ApiInvoker {
     }
     catch (IOException e) {
       throw new ApiException(500, e.getMessage());
+    }
+  }
+
+  public static String deserializeError(String json) throws ApiException {
+    try{
+      Map<String, Object> jsonPayload = JsonUtil.getJsonMapper().readValue(json, Map.class);
+      Object payloadData = jsonPayload.get("message");
+      if (payloadData == null)
+        payloadData = jsonPayload.get("data");
+      return JsonUtil.getJsonMapper().convertValue(payloadData, String.class);
+    }
+    catch (IOException e) {
+      return e.getMessage();
     }
   }
 
@@ -161,6 +184,9 @@ public class ApiInvoker {
     Client client = getClient(host);
 
     StringBuilder b = new StringBuilder();
+
+    if (body == null && ! formParams.isEmpty())
+      body = formParams;
 
     for(String key : queryParams.keySet()) {
       String value = queryParams.get(key);
@@ -192,9 +218,6 @@ public class ApiInvoker {
     else if ("POST".equals(method)) {
       if(body == null)
         response = builder.post(ClientResponse.class, null);
-      else if(body instanceof FormDataMultiPart) {
-        response = builder.type(contentType).post(ClientResponse.class, body);
-      }
       else
         response = builder.type(contentType).post(ClientResponse.class, serialize(body));
     }
@@ -246,11 +269,17 @@ public class ApiInvoker {
         return "";
       }
     }
+    else if(response.getClientResponseStatus().getStatusCode() == 302) {
+      MultivaluedMap<String, String> headers = response.getHeaders();
+      String url = headers.getFirst("Location");
+      return "{\"data\":{\"callback_uri\":\""+url+"\"}}";
+    }
     else {
       String message = "error";
       if(response.hasEntity()) {
         try{
           message = String.valueOf(response.getEntity(String.class));
+          message = deserializeError(message);
         }
         catch (RuntimeException e) {
           // e.printStackTrace();
