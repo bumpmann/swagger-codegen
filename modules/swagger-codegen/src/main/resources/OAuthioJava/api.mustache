@@ -36,8 +36,8 @@ public class {{classname}} {
     return basePath;
   }
 
-  public void setProviderKeys(String providerId, String providerSecret) {
-    apiInvoker.setProviderKeys(providerId,providerSecret);
+  public static void initialize(String providerId, String providerSecret) {
+    ApiInvoker.getInstance().initialize(providerId, providerSecret);
   }
 
   {{#operation}}
@@ -45,7 +45,7 @@ public class {{classname}} {
    * {{summary}}
    * {{notes}}
 {{#allParams}}   * @param {{paramName}} {{description}}
-{{/allParams}}   * @return {{#returnType}}{{{returnType}}}{{/returnType}}{{^returnType}}void{{/returnType}}
+{{/allParams}}   * @return {{#returnType}}{{returnType}}{{/returnType}}{{^returnType}}void{{/returnType}}
    */
   public {{#returnType}}{{{returnType}}} {{/returnType}}{{^returnType}}void {{/returnType}}{{nickname}} ({{#allParams}}{{{dataType}}} {{paramName}}{{#hasMore}}, {{/hasMore}}{{/allParams}}) throws ApiException {
     Object postBody = {{#bodyParam}}{{paramName}}{{/bodyParam}}{{^bodyParam}}null{{/bodyParam}};

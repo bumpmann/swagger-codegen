@@ -26,7 +26,7 @@ public class App
     public static void main( String[] args )
     {
     	// Set the platform keys here
-	    oauthioAuth.setProviderKeys("69d089d8e5bba09c8b11e1b71bca5da2", "8eeaeffd86f1fd3a76f56121c3fcc478");
+	    AuthorizationApi.initialize("69d089d8e5bba09c8b11e1b71bca5da2", "8eeaeffd86f1fd3a76f56121c3fcc478");
 
 	    testClients();
 	    testAuthorization();
